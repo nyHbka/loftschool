@@ -1,84 +1,41 @@
-/* ДЗ 5 - DOM Events */
+/* ДЗ 6.1 - Асинхронность и работа с сетью */
 
 /**
- * Функция должна добавлять обработчик fn события eventName к элементу target
+ * Функция должна создавать Promise, который должен быть resolved через seconds секунду после создания
  *
- * @param {string} eventName - имя события, на которое нужно добавить обработчик
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - обработчик
+ * @param {number} seconds - количество секунд, через которое Promise должен быть resolved
+ * @return {Promise}
  */
-function addListener(eventName, target, fn) {
-    target.addEventListener(eventName, fn);
+function delayPromise(seconds) {
+    return new Promise(function(resolve) {
+        setTimeout(resolve, 1000 * seconds);
+    })
 }
 
 /**
- * Функция должна удалять обработчик fn события eventName у элемента target
+ * Функция должна вернуть Promise, который должен быть разрешен массивом городов, загруженным из
+ * https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json
+ * Элементы полученного массива должны быть отсортированы по имени города
  *
- * @param {string} eventName - имя события, для которого нужно удалить обработчик
- * @param {Element} target - элемент, у которого нужно удалить обработчик
- * @param {function} fn - обработчик
+ * @return {Promise<Array<{name: String}>>}
  */
-function removeListener(eventName, target, fn) {
-    target.removeEventListener(eventName, fn);
-}
+function loadAndSortTowns() {
+    return new Promise(function(resolve) {
+        var request = new XMLHttpRequest(),
+            url = 'https://raw.githubusercontent.com/smelukov/citiesTest/master/cities.json';
 
-/**
- * Функция должна добавлять к target обработчик события eventName, который должен отменять действие по умолчанию
- *
- * @param {string} eventName - имя события, для которого нужно удалить обработчик
- * @param {Element} target - элемент, на который нужно добавить обработчик
- */
-function skipDefault(eventName, target) {
-    let event = (eventName) => {
-        eventName.preventDefault();
-    };
-    target.addEventListener(eventName, event);
-}
-
-/**
- * Функция должна эмулировать событие click для элемента target
- *
- * @param {Element} target - элемент, на который нужно добавить обработчик
- */
-function emulateClick(target) {
-    target.dispatchEvent(new Event('click'));
-}
-
-/**
- * Функция должна добавить такой обработчик кликов к элементу target
- * который реагирует (вызывает fn) только на клики по элементам BUTTON внутри target
- *
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - функция, которую нужно вызвать при клике на элемент BUTTON внутри target
- */
-function delegate(target, fn) {
-    let myButtons = target.getElementsByTagName('button');
-    for (let i = 0; i < myButtons.length; i++) {
-        myButtons[i].addEventListener('click', fn);
-    }
-}
-
-/**
- * *** Со звездочкой ***
- * Функция должна добавить такой обработчик кликов к элементу target
- * который сработает только один раз и удалится
- * Постарайтесь не создавать глобальных переменных
- *
- * @param {Element} target - элемент, на который нужно добавить обработчик
- * @param {function} fn - обработчик
- */
-function once(target, fn) {
-    target.addEventListener('click', function event() {
-        fn();
-        target.removeEventListener('click', event);
+        request.open('GET', url, true);
+        request.send();
+        request.onload = function() {
+            if(this.status == 200) {
+                var cities = JSON.parse(this.responseText);
+                resolve(cities.sort((a, b) => a.name.localeCompare(b.name)));
+            }
+        }
     })
 }
 
 export {
-    addListener,
-    removeListener,
-    skipDefault,
-    emulateClick,
-    delegate,
-    once
+    delayPromise,
+    loadAndSortTowns
 };
